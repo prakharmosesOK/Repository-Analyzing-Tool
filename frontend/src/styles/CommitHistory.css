@@ -1,0 +1,17 @@
+.CommitHistoryContainer {
+    border: 2px solid red;
+    height: 800px;
+}
+.commitoutput{
+    border: 2px solid blue;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+}
+
+.commitoutput .commitHistoryBlock {
+    border: 2px solid green;
+    width:800px;
+    display: flex;
+}
