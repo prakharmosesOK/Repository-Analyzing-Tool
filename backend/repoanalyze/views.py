@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 import subprocess
 from github import Github
+import shutil
 
 
   
@@ -501,8 +502,41 @@ def genDocument_from_docstr(request):
         return JsonResponse({'error': 'No input provided'})
     
     # Generate documentation using Sphinx
-    subprocess.run(["sphinx-apidoc", "-o", "docs", repo_link])
-    subprocess.run(["sphinx-build", "-b", "html", "docs", "docs/_build"])
+    # subprocess.run(["sphinx-apidoc", "-o", "docs", repo_link])
+    # subprocess.run(["sphinx-build", "-b", "html", "docs", "docs/_build"])
+    
+    # Cloning the repository
+    repo_path = repo_cloning(repo_link)
+
+    # Move to the clone repo
+    os.chdir(repo_path)
+
+    # Initializing Sphinx project
+    if not os.path.exists("docs"):
+        subprocess.run(["sphinx-quickstart", "--quiet"])
+
+    # Setting the theme to shpinx_rtd_theme and adding some essential features
+    with open("docs/conf.py", "a") as conf_file:
+        conf_file.write("import os\nimport sys\nsys.path.insert(0, os.path.abspath('.'))\n")
+        conf_file.write("\nhtml_theme = 'sphinx_rtd_theme'\n")
+        conf_file.write("extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']\n")
+    
+    # Adding modules to the index.rst file
+    with open("docs/index.rst", "a") as index_file:
+        index_file.write("\n.. toctree::\n   :maxdepth: 2\n   :caption: Contents:\n\n   module\n")
+
+    # Generate API documentation
+    subprocess.run(['sphinx-apidoc', '-o', 'docs', '.'])
+
+    # Build the documentation
+    subprocess.run(['sphinx-build', '-b', 'html', 'docs', 'docs/_build'])
+
+    # Create a zip file of the documentation generated
+    shutil.make_archive('documentation', 'zip', 'docs/_build')
+
+    return os.path.abspath('documentation.zip')
+    # Move the generated HTML files to the output directory
+    # subprocess.run(["mv", "build/html", '../output_dir'])
 
 # -----------------------------------------------------------------------------------------------------------------
 # Utils
