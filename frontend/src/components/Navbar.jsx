@@ -8,6 +8,7 @@ const Navbar = () => {
             <ul>
                 <li><Link to='/components/DependencyTracker'>Dependency Tracker</Link></li>
                 <li><Link to='/components/CommitHistory'>Commit History</Link></li>
+                <li><Link to='/components/DocGenerator'>Doc Generator</Link></li>
                 <li>About Us</li>
                 <li>Home</li>
             </ul>

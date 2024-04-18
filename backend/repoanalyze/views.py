@@ -1,21 +1,65 @@
 from django.shortcuts import render
 import json
+import base64
 from django.http import JsonResponse
 
-# import ast
-# import networkx as nx
 import os
-# import matplotlib.pyplot as plt
-
-# import base64
+import requests
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
 
 import subprocess
 from github import Github
 
 
   
-# from PIL import Image
+# Load the environment variables from the .env file
+load_dotenv()
 
+gemni_api_key = os.getenv("GEMNI_API_KEY")
+genai.configure(api_key=gemni_api_key)
+
+# Set up the model
+generation_config = {
+    "temperature": 0.9,
+    "top_p": 1,
+    "top_k": 1,
+    "max_output_tokens": 2048,
+}
+
+# Don't chnage these
+safety_settings = [
+    {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+]
+
+model = genai.GenerativeModel(model_name="gemini-1.0-pro",
+                            generation_config=generation_config,
+                            safety_settings=safety_settings)
+
+# To save the history of the conversation
+convo = model.start_chat(history=[
+])
+
+
+
+# Creation of all the views
+# -----------------------------------------------------------------------------------------------------------------
 # Cloning the Repository into the local system
 def repo_cloning(git_repo_link: str) -> str:
     repo_file_path = os.path.basename(git_repo_link)
@@ -35,6 +79,7 @@ def read_dependencies(repo_path: str) -> str:
     if not os.path.exists(dependencies_file):
         # Create requirements.txt using pipreqs (assuming it's installed)
         depend_command = f"pipreqs {repo_path} --force --savepath {dependencies_file}"
+        depend_gen_command = f"pipreqs {repo_path} --force --savepath {dependencies_file} --generate"
         try:
             subprocess.check_call(depend_command.split())  # Using split() for safer execution
         except subprocess.CalledProcessError as e:
@@ -125,3 +170,343 @@ def get_commit_history(request):
     print(output_string)
     
     return JsonResponse({'output': output_string})
+
+# -----------------------------------------------------------------------------------------------------------------
+# Implementing file extraction
+def get_files_from_repository(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required'})
+    
+    body=json.loads(request.body)
+    input_text=body["input"]
+    print(input_text)
+    if input_text is None:
+        return JsonResponse({'error': 'No input provided'})
+    
+    file_names = []
+    api_link = input_text.replace("github.com", "api.github.com/repos") + "/contents/"
+    response = requests.get(api_link)
+
+    if response.status_code == 404:
+        print("Invalid Github repo link")
+        return
+
+    files = json.loads(response.text)
+    # print(files)
+
+    for file in files:
+        if (file["type"] == "file"):
+            file_url = input_text + "/blob/main/" + file["path"]
+            file_names.append(file_url)
+        elif (file["type"] == "dir"):
+            # get_files_from_dir(input_text, file["path"], file_names)
+            pass
+    print_array(file_names) # To display the files fetched
+    return JsonResponse({'output': file_names})
+
+def get_files_from_dir(repo_link, dir_path, file_names):
+    api_link = repo_link.replace("github.com", "api.github.com/repos") + "/contents/" + dir_path
+    response = requests.get(api_link)
+
+    if (response.status_code == 404):
+        print("Invalid GitHub Repository link!")
+        return
+    files = json.loads(response.text)
+
+    for file in files:
+        if file["type"] == "file":
+            file_url = repo_link + "/blob/main/" + dir_path + "/" + file["name"]
+            file_names.append(file_url)
+        elif file["type"] == "dir":
+            get_files_from_dir(repo_link, dir_path + "/" + file["name"], file_names)
+
+# -----------------------------------------------------------------------------------------------------------------
+# Implementing Documentation Generator
+# Using Gemni ai
+def generate_by_model(prompt: str):
+    convo.send_message(prompt)
+    return (convo.last.text)
+
+def generate_by_model_with_history(prompt: str, history: list):
+    convo = model.start_chat(history=history)
+    convo.send_message(prompt)
+    return (convo.last.text)
+
+# Fetching data from files
+def fetch_data_from_files(files):
+    files_data = {}
+    for file in files:
+        repo_url = file.split("/")
+        owner = repo_url[3]
+        repo = repo_url[4]
+        file_path = "/".join(repo_url[7:])
+        api_link = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}"
+        response = requests.get(api_link, params={"ref": "main"})
+        if response.status_code == 404:
+            print("Invalid Github repo link")
+            return
+        data = response.json()
+        files_data[file] = base64.b64decode(data["content"])
+    return files_data
+
+# Parsing the file contents
+def parse_pyfile_content(file_data):
+    parsed_sections = []
+    current_section = ""
+    import_section = ""
+    is_Class = False
+    is_Function = False
+
+    for line in file_data.splitlines():
+        if not line:
+            continue
+
+        if line.startswith("import") or line.startswith("from"):
+            import_section += line + "\n"
+            continue
+
+        if is_Class:
+            if line.startswith("    ") or line.startswith("\t"):
+                current_section += line + "\n"
+            else:
+                parsed_sections.append(current_section)
+                current_section = ""
+                is_Class = False
+        
+        if is_Function:
+            if line.startswith("    ") or line.startswith("\t"):
+                current_section += line + "\n"
+            else:
+                parsed_sections.append(current_section)
+                current_section = ""
+                is_Function = False
+        
+        if line.startswith("class"):
+            current_section += line + "\n"
+            is_Class = True
+            continue
+
+        if line.startswith("def"):
+            current_section += line + "\n"
+            is_Function = True
+            continue
+    
+    parsed_sections.insert(0, import_section)
+    return parsed_sections
+
+# Preparing the data for the model
+def preprocess_data(files_data):
+    for file_name, file_data in files_data.items():
+        files_data[file_name] = parse_pyfile_content(file_data)
+    return files_data
+
+# Generating Docstrings
+def generate_docstrings_each(files_data):
+    for file_name, file_data in files_data.items():
+        updated_file_data = []
+        for component in file_data:
+            updated_component = generate_by_model(component)
+            updated_file_data.append(updated_component)
+        files_data[file_name] = updated_file_data
+    return files_data
+
+# Writing the generated docstrings to the files
+def assemble_files(generated_doc_strings):
+    for file_name, file_data in generated_doc_strings.items():
+        updated_file_data = ""
+        for component in file_data:
+            updated_file_data += component + "\n\n"
+        generated_doc_strings[file_name] = updated_file_data
+    return generated_doc_strings
+
+# Copying all the contents from main branch to another branch
+def create_branch_and_copy_contents(owner, repo, token):
+    # GitHub API URLs
+    repo_url = f"https://api.github.com/repos/{owner}/{repo}"
+    branches_url = f"{repo_url}/git/refs/heads"
+
+    # Headers for the API requests
+    headers = {
+        'Authorization': f'token {token}',
+        'Accept': 'application/vnd.github.v3+json',
+    }
+
+    # Get the list of branches
+    response = requests.get(branches_url, headers=headers)
+    response.raise_for_status()  # Raise an exception if the request failed
+
+    branches = response.json()
+
+    # Check if the branch already exists
+    if any(branch['ref'] == 'refs/heads/DocStrGen' for branch in branches):
+        print("Branch 'DocStrGen' already exists.")
+        return
+
+    # Get the SHA of the latest commit on main
+    main_sha = next(branch['object']['sha'] for branch in branches if branch['ref'] == 'refs/heads/main')
+
+    # Create the new branch
+    response = requests.post(branches_url, headers=headers, data=json.dumps({
+        'ref': 'refs/heads/DocStrGen',
+        'sha': main_sha,
+    }))
+    response.raise_for_status()  # Raise an exception if the request failed
+    print("Branch 'DocStrGen' created successfully.")
+
+# Writing the files in DocStrGen branch
+def write_to_file_in_branch(owner, repo, token, path, message, content, branch="DocStrGen"):
+    # GitHub API URL
+    file_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+
+    # Headers for the api request
+    headers = {
+        'Authorization': f'token {token}',
+        'Accept': 'application/vnd.github.v3+json',
+    }
+
+    # Get the SHA of the file
+    response = requests.get(file_url, params={'ref': branch})
+    sha = response.json().get('sha') if response.status_code == 200 else None
+
+    # Updating the file
+    response = requests.put(file_url, headers=headers, data=json.dumps({
+        'message': message,
+        'content': base64.b64encode(content.encode()).decode(),
+        'sha': sha,
+        'branch': branch,
+    }))
+    response.raise_for_status()   # Raise an exception if the request failed
+    return "Updated successfully!"
+
+# Writing the files in the GitHub repo with the generated docstrings on another branch
+def write_to_files(files):
+    repo_file = files.keys()[0]
+    repo_url = repo_file.split("/")
+    owner = repo_url[3]
+    repo = repo_url[4]
+    token = os.getenv("GITHUB_ACCESS_TOKEN")
+
+    # Create a new branch and copy the contents of the main branch
+    create_branch_and_copy_contents(owner, repo, token)
+
+    # Write the generated docstrings to the files
+    for file_name, file_data in files.items():
+        repo_link = file_name.split("/")
+        path = "/".join(repo_link[7:])
+        message = f"Writing doc strings to {path}"
+        result = write_to_file_in_branch(owner, repo, token, path, message, file_data)
+        if result != "Updated successfully!":
+            break
+    else:
+        return "Doc Strings generated successfully!"
+    return "Some error occured, please try again!"
+
+# Main function to map docstrings generation
+def generate_doc_strings(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required'})
+    try:
+        req=json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON request body'})
+    files = req["input"]
+    if files is None:
+        return JsonResponse({'error': 'No input provided'})
+    
+    files_data = fetch_data_from_files(files)
+    files_data_to_generate = preprocess_data(files_data)
+    generated_doc_strings = generate_docstrings_each(files_data_to_generate)
+    files = assemble_files(generated_doc_strings)
+    result = write_to_files(files)
+    return JsonResponse({'output': result})
+
+
+# Spacy model training for documentation generation
+# def run_once_for_spacy():
+#     import spacy
+#     from spacy import displacy
+#     from spacy.tokens import DocBin
+#     from tqdm import tqdm
+#     from spacy.util import filter_spans
+
+#     nlp = spacy.load("en_core_web_lg")
+
+#     with open('./python-train_clean.tsv', 'r', encoding='utf-8') as file:
+#         data = file.read()
+
+#     refined_first = list(data.split('\n'))
+#     refined_data = []
+
+#     for entry_row in refined_first:
+#         entry = list(entry_row.split('\t'))
+#         if (len(entry) < 2):
+#             continue
+#         if entry[0][0] == '"':
+#             entry[0] = entry[0][1:]
+#         if entry[0][-1] == '"':
+#             entry[0] = entry[0][:-1]
+#         if entry[1][0] == '"':
+#             entry[1] = entry[1][1:]
+#         if entry[1][-1] == '"':
+#             entry[1] = entry[1][:-1]
+#         refined_data.append(entry[0] + "\t" + entry[1])
+
+
+#     training_data = []
+#     for entry in refined_data:
+#         temp_dict = {}
+#         each_entry = list(entry.split('\t'))
+#         if (len(each_entry) < 2):
+#             continue
+#         temp_dict['text'] = each_entry[0]
+#         temp_dict['entities'] = [(0, len(each_entry[0]), each_entry[1])]
+#         training_data.append(temp_dict)
+
+#     nlp = spacy.blank("en")
+#     doc_bin = DocBin()
+
+#     for training_ex in tqdm(training_data):
+#         text = training_ex['text']
+#         labels = training_ex['entities']
+#         doc = nlp.make_doc(text)
+#         ents = []
+#         for start, end, label in labels:
+#             span = doc.char_span(start, end, label = label, alignment_mode = 'contract')
+#             if span is not None:
+#                 ents.append(span)
+#         filtered_ents = filter_spans(ents)
+#         doc.ents = filtered_ents
+#         doc_bin.add(doc)
+
+#     doc_bin.to_disk('train.spacy')
+
+# def generate_by_spacy(prompt: str):
+#     nlp_ner = spacy.load("./output/model-best")
+#     doc = nlp_ner(prompt)
+#     result = displacy.render(doc, style="ent")
+#     return result
+
+
+# -----------------------------------------------------------------------------------------------------------------
+# Implementing Documentation generation using DocStrings
+def genDocument_from_docstr(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required'})
+    try:
+        req=json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON request body'})
+    repo_link = req["input"]
+    if repo_link is None:
+        return JsonResponse({'error': 'No input provided'})
+    
+    # Generate documentation using Sphinx
+    subprocess.run(["sphinx-apidoc", "-o", "docs", repo_link])
+    subprocess.run(["sphinx-build", "-b", "html", "docs", "docs/_build"])
+
+# -----------------------------------------------------------------------------------------------------------------
+# Utils
+def print_array(array):
+    print("The files fetched are:")
+    for i in array:
+        print(i,",")
