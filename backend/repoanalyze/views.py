@@ -247,7 +247,7 @@ def fetch_data_from_files(files):
             print("Invalid Github repo link")
             return
         data = response.json()
-        files_data[file] = base64.b64decode(data["content"])
+        files_data[file] = base64.b64decode(data["content"]).decode("utf-8")
     return files_data
 
 # Parsing the file contents
@@ -261,37 +261,58 @@ def parse_pyfile_content(file_data):
     for line in file_data.splitlines():
         if not line:
             continue
+        
+        if  line == "" or line.isspace():
+            current_section += "\n"
+            continue
 
         if line.startswith("import") or line.startswith("from"):
             import_section += line + "\n"
             continue
 
         if is_Class:
-            if line.startswith("    ") or line.startswith("\t"):
+            if line.startswith("    ") or line.startswith("\t") or line.startswith("  "):
                 current_section += line + "\n"
             else:
                 parsed_sections.append(current_section)
                 current_section = ""
                 is_Class = False
+                if line.isspace() == False and line != "":
+                    current_section += line + '\n'
+            continue
         
         if is_Function:
-            if line.startswith("    ") or line.startswith("\t"):
+            if line.startswith("    ") or line.startswith("\t") or line.startswith("  "):
                 current_section += line + "\n"
             else:
                 parsed_sections.append(current_section)
                 current_section = ""
                 is_Function = False
+                if line.isspace() == False and line != "":
+                    current_section += line + '\n'
+            continue
         
         if line.startswith("class"):
-            current_section += line + "\n"
+            parsed_sections.append(current_section)
+            current_section = line + "\n"
             is_Class = True
             continue
 
         if line.startswith("def"):
-            current_section += line + "\n"
+            parsed_sections.append(current_section)
+            current_section = line + "\n"
             is_Function = True
             continue
+        
+        if current_section.startswith("def") or current_section.startswith("class"):
+            is_Function = False
+            is_Class = False
+            parsed_sections.append(current_section)
+            current_section = ""
+        current_section += line + "\n"
     
+    if current_section != "" or current_section.isspace() == False:
+        parsed_sections.append(current_section)
     parsed_sections.insert(0, import_section)
     return parsed_sections
 
@@ -306,7 +327,7 @@ def generate_docstrings_each(files_data):
     for file_name, file_data in files_data.items():
         updated_file_data = []
         for component in file_data:
-            updated_component = generate_by_model(component)
+            updated_component = generate_by_model("Generate DocStrings for the following python code:\n" + component)
             updated_file_data.append(updated_component)
         files_data[file_name] = updated_file_data
     return files_data
