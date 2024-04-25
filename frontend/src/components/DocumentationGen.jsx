@@ -40,7 +40,9 @@ const DocumentationGen = () => {
         setError(null);
         
         try {
-            const response = await axios.get('http://127.0.0.1:8000/repoanalyze/download_documentation/', {
+            const response = await axios.post('http://127.0.0.1:8000/repoanalyze/download_documentation/', {
+                    input: zipFile
+                }, {
                 responseType: 'blob'
             })
             const blob = response.data;

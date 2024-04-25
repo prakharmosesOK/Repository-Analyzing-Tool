@@ -587,7 +587,8 @@ def genDocument_from_docstr(request):
     shutil.make_archive('documentation', 'zip', f'{repo_name}')
 
     path_to_return = os.path.abspath('documentation.zip')
-    # path_to_return = path_to_return.replace("\\", '/')
+    path_to_return = path_to_return.replace("\\", '/')
+    print("The zip file path is: ", path_to_return)
 
     return JsonResponse({'output' : path_to_return})
     # Move the generated HTML files to the output directory
@@ -595,15 +596,20 @@ def genDocument_from_docstr(request):
 
 # Downloading the generated documentation
 def download_documentation(request):
+    print("Coming here 1")
     if request.method != 'POST':
         return JsonResponse({'error': 'POST request required'})
+    print("Coming here 2")
     try:
         req = json.loads(request.body)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON request body'})
+    print("Coming here 3")
     zip_file_link = req["input"]
     if zip_file_link is None:
         return JsonResponse({'error': 'No input provided'})
+    
+    print("The path got of documentation is: ", zip_file_link)
     
     with open(zip_file_link, 'rb') as zip_file:
         response = HttpResponse(zip_file.read(), content_type='application/zip')
