@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import '../styles/DocGenerator.css';
 import axios from 'axios';
 
@@ -8,7 +8,8 @@ const DocGenerator = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [filesInRepo, setFilesInRepo] = useState([]);
-    // const [filesToGenerateDoc, setFilesToGenerateDoc] = useState([]);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [docGenerated, setDocGenerated] = useState(false);
 
     // Handle form submission
     const handleDocGeneratorSubmit = async (event) => {
@@ -33,36 +34,42 @@ const DocGenerator = () => {
         }
     }
 
-    // const fetchFilesFromDir = async (dir) => {
-    //     dir.preventDefault();
+    const handleFileSelection = (e) => {
+        e.preventDefault();
 
-    //     try {
-    //         const response = await axios.post('http://127.0.0.1:8000/repoanalyze/get_files_from_dir/', {
-    //             input: dir
-    //         })
-    //         const data = response.data.output;
-    //         filesInRepo[dir] = data;
-    //     } catch (error) {
-    //         console.error('Error fetching files:', error);
-    //         setError('Failed to retrieve files. Please try again later.');
-    //     }
-    // }
+        const file = e.target.name;
+        if (e.target.checked) {
+            setSelectedFiles([...selectedFiles, file])
+        } else {
+            setSelectedFiles(selectedFiles.filter((selectedFile) => selectedFile !== file))
+        }
+    }
 
-    // useEffect(() => {
-    //     const displayFiles = () => {
-    //         return (
-    //             <div className="doc-generation">
-    //                 <div className="files-container">
-    //                     {filesInRepo && filesInRepo.map((file, index) => (
-    //                         <input type='radio' key={index}>{file}</input>
-    //                     ))}
-    //                 </div>
-    //                 {/* <button onClick={generateDocumentation}>Generate Doc</button> */}
-    //             </div>
-    //         )
-    //     }
-    //     displayFiles();
-    // }, [filesInRepo])
+    const handleDocGeneration = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/repoanalyze/generate_doc_strings/', {
+                input: selectedFiles
+            })
+            const data = response.data.output;
+            if (data === 'success') {
+                setDocGenerated(true);
+                setFilesInRepo([]);
+                setSelectedFiles([]);
+                setError(null);
+            } else {
+                setError('Failed to generate documentation. Please try again later.');
+                setDocGenerated(false);
+            }
+        } catch(error) {
+            setError('Failed to generate documentation. Please try again later.');
+            setDocGenerated(false);
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     return (
         <div className="doc-generator-container">
@@ -78,24 +85,25 @@ const DocGenerator = () => {
                 </button>
             </form>
 
-            {filesInRepo.length > 0 ? (
-                <form>
+            {filesInRepo.length > 0 && !docGenerated ? (
+                <form onSubmit={handleDocGeneration}>
                     {filesInRepo.map((file, index) => (
                         <div className="div">
                             <input
                                 key={index}
                                 type='checkbox'
                                 name={file}
+                                onChange={handleFileSelection}
                             />
                             <label htmlFor={file}>{file}</label>
                         </div>
                     ))}
-                    <button>Generate Doc</button>
+                    <button>{isLoading ? "Loading..." : "Generate Doc"}</button>
                 </form>) : null
             }
 
-            {error && <p className="error-message">{error}</p>}
-
+            {error && !docGenerated && <p className="error-message">{error}</p>}
+            {docGenerated && <p className="success-message">Documentation generated successfully!</p>}
 
         </div>
     )

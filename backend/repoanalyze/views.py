@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import json
 import base64
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 import os
 import requests
@@ -62,14 +62,14 @@ convo = model.start_chat(history=[
 # Creation of all the views
 # -----------------------------------------------------------------------------------------------------------------
 # Cloning the Repository into the local system
-def repo_cloning(git_repo_link: str) -> str:
+def repo_cloning(git_repo_link: str, branch: str = "main") -> str:
     repo_file_path = os.path.basename(git_repo_link)
     print("The file path is: ", repo_file_path)
 
     # Checking if the repo already exists at the desired place
     if os.path.exists(repo_file_path):
         return os.path.abspath(repo_file_path)
-    subprocess.check_call(['git', 'clone', f'{git_repo_link}', repo_file_path])
+    subprocess.check_call(['git', 'clone', '--branch', f'{branch}', f'{git_repo_link}', repo_file_path])
     return os.path.abspath(repo_file_path)
 
 # Reading the requirements file
@@ -200,7 +200,7 @@ def get_files_from_repository(request):
             file_url = input_text + "/blob/main/" + file["path"]
             file_names.append(file_url)
         elif (file["type"] == "dir"):
-            # get_files_from_dir(input_text, file["path"], file_names)
+            get_files_from_dir(input_text, file["path"], file_names)
             pass
     print_array(file_names) # To display the files fetched
     return JsonResponse({'output': file_names})
@@ -238,6 +238,7 @@ def fetch_data_from_files(files):
     files_data = {}
     for file in files:
         repo_url = file.split("/")
+        print(repo_url)
         owner = repo_url[3]
         repo = repo_url[4]
         file_path = "/".join(repo_url[7:])
@@ -342,14 +343,15 @@ def assemble_files(generated_doc_strings):
     return generated_doc_strings
 
 # Copying all the contents from main branch to another branch
-def create_branch_and_copy_contents(owner, repo, token):
+def create_branch_and_copy_contents(owner, repo, token2):
     # GitHub API URLs
     repo_url = f"https://api.github.com/repos/{owner}/{repo}"
     branches_url = f"{repo_url}/git/refs/heads"
+    refs_url = f"{repo_url}/git/refs"
 
     # Headers for the API requests
     headers = {
-        'Authorization': f'token {token}',
+        'Authorization': f'token {token2}',
         'Accept': 'application/vnd.github.v3+json',
     }
 
@@ -368,15 +370,14 @@ def create_branch_and_copy_contents(owner, repo, token):
     main_sha = next(branch['object']['sha'] for branch in branches if branch['ref'] == 'refs/heads/main')
 
     # Create the new branch
-    response = requests.post(branches_url, headers=headers, data=json.dumps({
-        'ref': 'refs/heads/DocStrGen',
+    response = requests.post(refs_url, headers=headers, data=json.dumps({
+        'ref': 'refs/heads/GenDocStr',
         'sha': main_sha,
     }))
     response.raise_for_status()  # Raise an exception if the request failed
-    print("Branch 'DocStrGen' created successfully.")
 
 # Writing the files in DocStrGen branch
-def write_to_file_in_branch(owner, repo, token, path, message, content, branch="DocStrGen"):
+def write_to_file_in_branch(owner, repo, token, path, message, content, branch="GenDocStr"):
     # GitHub API URL
     file_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
 
@@ -402,14 +403,15 @@ def write_to_file_in_branch(owner, repo, token, path, message, content, branch="
 
 # Writing the files in the GitHub repo with the generated docstrings on another branch
 def write_to_files(files):
-    repo_file = files.keys()[0]
+    repo_file = list(files.keys())[0]
     repo_url = repo_file.split("/")
     owner = repo_url[3]
     repo = repo_url[4]
     token = os.getenv("GITHUB_ACCESS_TOKEN")
+    token2 = os.getenv("GITHUB_ACCESS_TOKEN2")
 
     # Create a new branch and copy the contents of the main branch
-    create_branch_and_copy_contents(owner, repo, token)
+    # create_branch_and_copy_contents(owner, repo, token2)
 
     # Write the generated docstrings to the files
     for file_name, file_data in files.items():
@@ -522,42 +524,111 @@ def genDocument_from_docstr(request):
     if repo_link is None:
         return JsonResponse({'error': 'No input provided'})
     
-    # Generate documentation using Sphinx
-    # subprocess.run(["sphinx-apidoc", "-o", "docs", repo_link])
-    # subprocess.run(["sphinx-build", "-b", "html", "docs", "docs/_build"])
-    
     # Cloning the repository
-    repo_path = repo_cloning(repo_link)
+    repo_path = repo_cloning(repo_link, "GenDocStr")
 
     # Move to the clone repo
     os.chdir(repo_path)
 
+    if not os.path.exists("docs"):
+        os.mkdir("docs")
+    os.chdir("docs")
+
     # Initializing Sphinx project
     if not os.path.exists("docs"):
-        subprocess.run(["sphinx-quickstart", "--quiet"])
-
-    # Setting the theme to shpinx_rtd_theme and adding some essential features
-    with open("docs/conf.py", "a") as conf_file:
-        conf_file.write("import os\nimport sys\nsys.path.insert(0, os.path.abspath('.'))\n")
-        conf_file.write("\nhtml_theme = 'sphinx_rtd_theme'\n")
-        conf_file.write("extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']\n")
+        subprocess.run(["sphinx-quickstart", "--quiet", f"--project=DocGenTool", "--author=DocGenerator"])
     
-    # Adding modules to the index.rst file
-    with open("docs/index.rst", "a") as index_file:
-        index_file.write("\n.. toctree::\n   :maxdepth: 2\n   :caption: Contents:\n\n   module\n")
+    os.chdir("..")
+
+    # if not os.path.exists("__init__.py"):
+    #     with open("__init__.py", "w") as f:
+    #         f.write("")
 
     # Generate API documentation
     subprocess.run(['sphinx-apidoc', '-o', 'docs', '.'])
+    
+    # Adding modules to the index.rst file
+    with open("docs/index.rst", "r") as conf_file:
+        lines = conf_file.readlines()
+    
+    for i, line in enumerate(lines):
+        if "   :caption: Contents:" in line:
+            lines[i] = "   :caption: Contents: \n\n   modules\n"
+    
+    with open("docs/index.rst", "w") as index_file:
+        index_file.writelines(lines)
+
+    # Setting the theme to shpinx_rtd_theme and adding some essential features
+    with open("docs/conf.py", "r") as conf_file:
+        lines = conf_file.readlines()
+
+    # Modify the contents
+    for i, line in enumerate(lines):
+        if "# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information" in line:
+            lines[i] = '# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information \n\nimport os\nimport sys\nsys.path.insert(0, os.path.abspath(".."))\n'
+        if "html_theme = 'alabaster'" in line:
+            lines[i] = "\nhtml_theme = 'sphinx_rtd_theme'\n"
+        if "extensions = []" in line:
+            lines[i] = "extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']\n"
+
+    # Write the modified contents back to the file
+    with open("docs/conf.py", "w") as conf_file:
+        conf_file.writelines(lines)
+    
+    os.chdir("docs")
 
     # Build the documentation
-    subprocess.run(['sphinx-build', '-b', 'html', 'docs', 'docs/_build'])
+    # subprocess.run(['sphinx-build', '-b', 'html', 'docs', 'docs/_build'])
+    subprocess.run(['make.bat', 'html'])
+    os.chdir("..")
 
     # Create a zip file of the documentation generated
-    shutil.make_archive('documentation', 'zip', 'docs/_build')
+    shutil.make_archive('documentation', 'zip', 'docs')
+    os.chdir("..")
 
-    return os.path.abspath('documentation.zip')
+    repo_name = list(repo_path.split("/"))[-1]
+    path_to_return = os.path.abspath(f'{repo_name}/documentation.zip'.replace("\\", "/"))
+
+    return JsonResponse({'output' : path_to_return})
     # Move the generated HTML files to the output directory
     # subprocess.run(["mv", "build/html", '../output_dir'])
+
+# Downloading the generated documentation
+def download_documentation(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required'})
+    try:
+        req = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON request body'})
+    zip_file_link = req["input"]
+    if zip_file_link is None:
+        return JsonResponse({'error': 'No input provided'})
+    
+    with open(zip_file_link, 'rb') as zip_file:
+        response = HttpResponse(zip_file.read(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename=documentation.zip'
+        return response
+
+# -----------------------------------------------------------------------------------------------------------------
+# Removing the zip file
+def remove_zip(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required'})
+    try:
+        req = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON request body'})
+    zip_file_link = req["input"]
+    if zip_file_link is None:
+        return JsonResponse({'error': 'No input provided'})
+    
+    path_to_remove = list(zip_file_link.split('/'))[:-1]
+    path_to_remove = "/".join(path_to_remove)
+
+    # Removing the desired folder
+    os.remove(path_to_remove)
+    return JsonResponse({'output': 'Zip file removed successfully!'})
 
 # -----------------------------------------------------------------------------------------------------------------
 # Utils
