@@ -7,7 +7,7 @@ const DocumentationGen = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [zipFile, setZipFile] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
-    // const [isDownloaded, setIsDownloaded] = useState(false);
+    const [isDownloaded, setIsDownloaded] = useState(false);
 
     const handleDocGeneration = async (event) => {
         event.preventDefault();
@@ -37,6 +37,7 @@ const DocumentationGen = () => {
     const downloadDocumentation = async () => {
         console.log("Startinfg download!!");
         setIsDownloading(true);
+        setIsDownloaded(false);
         setError(null);
         
         try {
@@ -55,28 +56,28 @@ const DocumentationGen = () => {
             setError('Failed to download the documentatoin. Please try again later!');
         } finally {
             setIsDownloading(false);
-            // setIsDownloaded(true);
+            setIsDownloaded(true);
         }
     }
 
-    // useEffect(() => {
-    //     const removeFromBackend = async () => {
-    //         if (zipFile && isDownloaded) {
-    //             try {
-    //                 const response = await axios.post('http://127.0.0.1:8000/repoanalyze/remove_zip/', {
-    //                     input: zipFile
-    //                 })
-    //                 if (response.status === 200) {
-    //                     console.log(`Zip file removed from backend: ${zipFile}`);
-    //                 }
-    //             } catch (error) {
-    //                 console.log(`Error while removing zip file: ${error}`);
-    //             }
-    //         }
-    //     }
+    useEffect(() => {
+        const removeFromBackend = async () => {
+            if (zipFile && isDownloaded) {
+                try {
+                    const response = await axios.post('http://127.0.0.1:8000/repoanalyze/remove_zip/', {
+                        input: zipFile
+                    })
+                    if (response.status === 200) {
+                        console.log(`Zip file removed from backend: ${zipFile}`);
+                    }
+                } catch (error) {
+                    console.log(`Error while removing zip file: ${error}`);
+                }
+            }
+        }
 
-    //     removeFromBackend();
-    // }, [isDownloaded, zipFile])
+        removeFromBackend();
+    }, [isDownloaded, zipFile])
 
     return (
         <main className='documentation-gen-container'>
