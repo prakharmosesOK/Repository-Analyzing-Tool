@@ -580,14 +580,14 @@ def genDocument_from_docstr(request):
     # Build the documentation
     # subprocess.run(['sphinx-build', '-b', 'html', 'docs', 'docs/_build'])
     subprocess.run(['make.bat', 'html'])
-    os.chdir("..")
+    os.chdir("../..")
+    repo_name = list(repo_path.split("/"))[-1]
 
     # Create a zip file of the documentation generated
-    shutil.make_archive('documentation', 'zip', 'docs')
-    os.chdir("..")
+    shutil.make_archive('documentation', 'zip', f'{repo_name}')
 
-    repo_name = list(repo_path.split("/"))[-1]
-    path_to_return = os.path.abspath(f'{repo_name}/documentation.zip'.replace("\\", "/"))
+    path_to_return = os.path.abspath('documentation.zip')
+    # path_to_return = path_to_return.replace("\\", '/')
 
     return JsonResponse({'output' : path_to_return})
     # Move the generated HTML files to the output directory
