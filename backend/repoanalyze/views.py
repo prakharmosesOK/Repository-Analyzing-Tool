@@ -632,7 +632,10 @@ def remove_zip(request):
 
     # Removing the desired folder
     os.remove(zip_file_link)
-    shutil.rmtree(path_to_remove_file)
+    try:
+        shutil.rmtree(path_to_remove_file, ignore_errors=True)
+    except OSError as e:
+        print(e)
     return JsonResponse({'output': 'Zip file removed successfully!'})
 
 # -----------------------------------------------------------------------------------------------------------------
