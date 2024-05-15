@@ -111,11 +111,12 @@ def get_dependencies(request):
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON request body'})
     git_repo_link = req["input"]
+    git_repo_branch = req["branch"]
 
     # print(f"Received input: {git_repo_link}")  # Debugging print statement
     if git_repo_link is not None:
         print("repo link: ", git_repo_link)
-        repo_path = repo_cloning(git_repo_link)
+        repo_path = repo_cloning(git_repo_link, git_repo_branch)
         print(repo_path)
         output_dependencies = read_dependencies(repo_path)
         print(output_dependencies)

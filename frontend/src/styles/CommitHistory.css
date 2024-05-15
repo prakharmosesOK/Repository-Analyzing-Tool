@@ -5,18 +5,18 @@
     align-items: center;
     place-content: center;
     margin-top: 50px;
-    /* background-color: #f9f9f9; */
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    /* background-color: red; */
 }
 
 /* Modified code */
 
 .CommitHistoryContainer form input {
     width: 80vmin;
-    height: 8vmin;
+    height: 6vmin;
+    padding-left: 1em;
+    font-size: medium;
     display: flex;
     place-content: center;
     color: white;

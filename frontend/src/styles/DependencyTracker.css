@@ -15,7 +15,9 @@
 
 .dependencyTrackerContainer form input {
   width: 80vmin;
-  height: 8vmin;
+  height: 5vmin;
+  padding: 0 1rem;
+  margin: 0.4rem 0;
   display: flex;
   
   place-content: center;
@@ -101,7 +103,7 @@
 .dependencyTrackerContainer .output textarea {
   width: 120vmin;
   padding: 2rem;
-  height: 50vmin;
+  height: 40vmin;
   display: flex;
   opacity: 0.95;
   margin-top: 3rem;

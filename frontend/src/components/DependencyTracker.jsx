@@ -5,6 +5,7 @@ import '../styles/DependencyTracker.css';
 const DependencyTracker = () => {
     // Intialising variables
     const [searchItem, setSearchItem] = useState('');
+    const [branch, setBranch] = useState('main');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [dependencyOutput, setDependencyOutput] = useState('');
@@ -21,6 +22,7 @@ const DependencyTracker = () => {
         try {
             const response = await axios.post("http://127.0.0.1:8000/repoanalyze/get_dependencies/", {
                 input: searchItem,
+                branch: branch,
             });
             console.log(response.data.output);
             setDependencyOutput(response.data.output);
@@ -43,6 +45,12 @@ const DependencyTracker = () => {
                     value={searchItem}
                     onChange={handleSearchTextChange}
                     placeholder='Enter the GitHub repository link here'
+                />
+                <input
+                    type="text"
+                    value={branch}
+                    onChange={(event) => setBranch(event.target.value)}
+                    placeholder='Branch name (defaultL main)'
                 />
                 <button type='submit' disabled={loading}>{loading ? "Loading..." : "Submit"}</button>
             </form>

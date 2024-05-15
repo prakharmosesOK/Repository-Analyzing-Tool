@@ -1,138 +1,314 @@
 /* DependencyTracker.css */
 .doc-generator-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 50px;
-    /* background-color: #f9f9f9; */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    color:#ffffff;
-    /* background-color: red; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+  /* background-color: #f9f9f9; */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  /* background-color: red; */
+}
+
+/* Modified code */
+
+.doc-generator-container form input {
+  width: 80vmin;
+  height: 6vmin;
+  display: flex;
+  padding-left: 1em;
+  font-size: medium;
+
+  place-content: center;
+  color: white;
+  opacity: .9;
+
+  text-shadow: 0 1px 0 #000;
+
+  --main-bg: conic-gradient(from var(--border-angle),
+      #213,
+      #112 5%,
+      #112 60%,
+      #213 95%);
+
+  border: solid 5px transparent;
+  border-radius: 2em;
+  --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+
+  background:
+    var(--main-bg) padding-box,
+    var(--gradient-border) border-box,
+    var(--main-bg) border-box;
+
+  background-position: center center;
+
+  animation: bg-spin 3s linear infinite;
+}
+
+@keyframes bg-spin {
+  to {
+    --border-angle: 1turn;
   }
-  
-  /* Modified code */
-  
-  .doc-generator-container form input {
-    width: 80vmin;
-    height: 8vmin;
-    display: flex;
-    
-    place-content: center;
-    color: white;
-    opacity: .9;
-    
-    text-shadow: 0 1px 0 #000;
-  
-    --main-bg: conic-gradient(
-        from var(--border-angle),
-        #213,
-        #112 5%,
-        #112 60%,
-        #213 95%
-      );
-    
-    border: solid 5px transparent;
-    border-radius: 2em;
-    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
-    
-    background: 
-      var(--main-bg) padding-box,
-      var(--gradient-border) border-box, 
-      var(--main-bg) border-box;
-    
-    background-position: center center;
-  
-    animation: bg-spin 3s linear infinite;
-  }
-  
-  @keyframes bg-spin {
-    to {
-      --border-angle: 1turn;
-    }
-  }
-  
-  .doc-generator-container form input:hover {
-    animation-play-state: paused;
-  }
-  
-  @property --border-angle {
-    syntax: "<angle>";
-    inherits: true;
-    initial-value: 0turn;
-  }
-  
-  .doc-generator-container form {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .doc-generator-container form button {
-    width: 20vmin;
-    height: 8vmin;
-    color: white;
-    margin-top: 2rem;
-    text-shadow: 0 1px 0 #000;
-    
-    --main-bg: conic-gradient(
-        from var(--border-angle),
-        #213,
-        #112 5%,
-        #112 60%,
-        #213 95%
-      );
-    
-    border: solid 5px transparent;
-    border-radius: 2em;
-    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
-    
-    background: 
-      var(--main-bg) padding-box,
-      var(--gradient-border) border-box, 
-      var(--main-bg) border-box;
-    
-    background-position: center center;
-  
-    animation: bg-spin 10000s linear infinite;
-  }
-  
-  .doc-generator-container .output
-   textarea {
-    width: 120vmin;
-    padding: 2rem;
-    height: 50vmin;
-    display: flex;
-    opacity: 0.95;
-    margin-top: 3rem;
-    place-content: center;
-    color: white;
-    text-shadow: 0 1px 0 #000;
-  
-    --main-bg: conic-gradient(
-        from var(--border-angle),
-        #213,
-        #112 5%,
-        #112 60%,
-        #213 95%
-      );
-    
-    border: solid 5px transparent;
-    border-radius: 2em;
-    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
-    
-    background: 
-      var(--main-bg) padding-box,
-      var(--gradient-border) border-box, 
-      var(--main-bg) border-box;
-    
-    background-position: center center;
-  
-    animation: bg-spin 3s linear infinite;
-  }
-  
-  .doc-generator-container textarea:hover {
-    animation-play-state: paused;
-  }
+}
+
+.doc-generator-container form input:hover {
+  animation-play-state: paused;
+}
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0turn;
+}
+
+.doc-generator-container form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.doc-generator-container form button {
+  width: 20vmin;
+  height: 8vmin;
+  color: white;
+  margin-top: 2rem;
+  text-shadow: 0 1px 0 #000;
+
+  --main-bg: conic-gradient(from var(--border-angle),
+      #213,
+      #112 5%,
+      #112 60%,
+      #213 95%);
+
+  border: solid 5px transparent;
+  border-radius: 2em;
+  --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+
+  background:
+    var(--main-bg) padding-box,
+    var(--gradient-border) border-box,
+    var(--main-bg) border-box;
+
+  background-position: center center;
+
+  animation: bg-spin 10000s linear infinite;
+}
+
+.doc-generator-container .output textarea {
+  width: 120vmin;
+  padding: 2rem;
+  height: 50vmin;
+  display: flex;
+  opacity: 0.95;
+  margin-top: 3rem;
+  place-content: center;
+  color: white;
+  text-shadow: 0 1px 0 #000;
+
+  --main-bg: conic-gradient(from var(--border-angle),
+      #213,
+      #112 5%,
+      #112 60%,
+      #213 95%);
+
+  border: solid 5px transparent;
+  border-radius: 2em;
+  --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+
+  background:
+    var(--main-bg) padding-box,
+    var(--gradient-border) border-box,
+    var(--main-bg) border-box;
+
+  background-position: center center;
+
+  animation: bg-spin 3s linear infinite;
+}
+
+.doc-generator-container textarea:hover {
+  animation-play-state: paused;
+}
+
+/* Second phase of input */
+.gridOfFiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 1.5rem 0 0 0;
+  align-items: left;
+}
+
+.checkbox-wrapper-55 {
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border: 0.3em solid rgb(133, 199, 0);
+  border-radius: 5rem;
+  padding-left: 1.5rem;
+  height: 3em;
+}
+
+.checkbox-wrapper-55 p {
+  width: 35em;
+  height: 3rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-left: 1rem;
+}
+
+
+
+/* ---------------------------------------------------------------------------------- */
+/* CSS for the checkbox */
+.checkbox-wrapper-55 input[type="checkbox"] {
+  visibility: hidden;
+  display: none;
+}
+
+.checkbox-wrapper-55 *,
+.checkbox-wrapper-55 ::after,
+.checkbox-wrapper-55 ::before {
+  box-sizing: border-box;
+}
+
+.checkbox-wrapper-55 .rocker {
+  display: inline-block;
+  position: relative;
+  /*
+    SIZE OF SWITCH
+    ==============
+    All sizes are in em - therefore
+    changing the font-size here
+    will change the size of the switch.
+    See .rocker-small below as example.
+    */
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  color: #888;
+  width: 7em;
+  height: 4em;
+  overflow: hidden;
+  border-bottom: 0.5em solid #eee;
+}
+
+.checkbox-wrapper-55 .rocker-small {
+  font-size: 0.75em;
+}
+
+.checkbox-wrapper-55 .rocker::before {
+  content: "";
+  position: absolute;
+  top: 0.5em;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #999;
+  border: 0.5em solid #eee;
+  border-bottom: 0;
+}
+
+.checkbox-wrapper-55 .switch-left,
+.checkbox-wrapper-55 .switch-right {
+  cursor: pointer;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5em;
+  width: 3em;
+  transition: 0.2s;
+  user-select: none;
+}
+
+.checkbox-wrapper-55 .switch-left {
+  height: 2.4em;
+  width: 2.75em;
+  left: 0.85em;
+  bottom: 0.4em;
+  background-color: #ddd;
+  transform: rotate(15deg) skewX(15deg);
+}
+
+.checkbox-wrapper-55 .switch-right {
+  right: 0.5em;
+  bottom: 0;
+  background-color: #bd5757;
+  color: #fff;
+}
+
+.checkbox-wrapper-55 .switch-left::before,
+.checkbox-wrapper-55 .switch-right::before {
+  content: "";
+  position: absolute;
+  width: 0.4em;
+  height: 2.45em;
+  bottom: -0.45em;
+  background-color: #ccc;
+  transform: skewY(-65deg);
+}
+
+.checkbox-wrapper-55 .switch-left::before {
+  left: -0.4em;
+}
+
+.checkbox-wrapper-55 .switch-right::before {
+  right: -0.375em;
+  background-color: transparent;
+  transform: skewY(65deg);
+}
+
+.checkbox-wrapper-55 input:checked+.switch-left {
+  background-color: #0084d0;
+  color: #fff;
+  bottom: 0px;
+  left: 0.5em;
+  height: 2.5em;
+  width: 3em;
+  transform: rotate(0deg) skewX(0deg);
+}
+
+.checkbox-wrapper-55 input:checked+.switch-left::before {
+  background-color: transparent;
+  width: 3.0833em;
+}
+
+.checkbox-wrapper-55 input:checked+.switch-left+.switch-right {
+  background-color: #ddd;
+  color: #888;
+  bottom: 0.4em;
+  right: 0.8em;
+  height: 2.4em;
+  width: 2.75em;
+  transform: rotate(-15deg) skewX(-15deg);
+}
+
+.checkbox-wrapper-55 input:checked+.switch-left+.switch-right::before {
+  background-color: #ccc;
+}
+
+/* Keyboard Users */
+.checkbox-wrapper-55 input:focus+.switch-left {
+  color: #333;
+}
+
+.checkbox-wrapper-55 input:checked:focus+.switch-left {
+  color: #fff;
+}
+
+.checkbox-wrapper-55 input:focus+.switch-left+.switch-right {
+  color: #fff;
+}
+
+.checkbox-wrapper-55 input:checked:focus+.switch-left+.switch-right {
+  color: #333;
+}
+/* ---------------------------------------------------------------------------------- */

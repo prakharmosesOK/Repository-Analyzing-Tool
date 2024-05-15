@@ -35,6 +35,24 @@ const CommitHistory = () => {
     }
   };
 
+  // const processItems = (item) => {
+  //   let new_item = item.split(' ');
+  //   let output = toString(new_item[0]);
+  //   for (let i = 1; i < new_item.length; i++) {
+  //     if (new_item[i] === 'Stats') {
+  //       output += new_item.slice(i).join(' ');
+  //       break;
+  //     }
+  //     else if (toString(new_item[i-1]).endswith(':') === false) {
+  //       output += '\n'
+  //     }
+  //     else {
+  //       output += new_item[i];
+  //     }
+  //   }
+  //   return output
+  // }
+
   return (
     <div className="CommitHistoryContainer">
       <form onSubmit={handleCommitSearchSubmit}>
@@ -55,6 +73,7 @@ const CommitHistory = () => {
         <div className="commitoutput">
           {commitHistory.map((item, index) => (
             <div key={index} className="commitHistoryBlock">
+              {/* {item = processItems(item)} */}
               <p>{item}</p>
             </div>
           ))}

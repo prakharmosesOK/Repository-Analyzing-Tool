@@ -15,6 +15,7 @@ const DocGenerator = () => {
     const handleDocGeneratorSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
+        setFilesInRepo([]);
         setError(null);
 
         try {
@@ -63,7 +64,7 @@ const DocGenerator = () => {
                 setError('Failed to generate documentation. Please try again later.');
                 setDocGenerated(false);
             }
-        } catch(error) {
+        } catch (error) {
             setError('Failed to generate documentation. Please try again later.');
             setDocGenerated(false);
         } finally {
@@ -87,18 +88,24 @@ const DocGenerator = () => {
 
             {filesInRepo.length > 0 && !docGenerated ? (
                 <form onSubmit={handleDocGeneration}>
-                    {filesInRepo.map((file, index) => (
-                        <div className="div">
-                            <input
-                                key={index}
-                                type='checkbox'
-                                name={file}
-                                onChange={handleFileSelection}
-                            />
-                            <label htmlFor={file}>{file}</label>
-                        </div>
-                    ))}
-                    <button>{isLoading ? "Loading..." : "Generate Doc"}</button>
+                    <div className="gridOfFiles">
+                        {filesInRepo.map((file, index) => (
+                            <div className="checkbox-wrapper-55">
+                                <label className='rocker rocker-small'>
+                                    <input
+                                        key={index}
+                                        type='checkbox'
+                                        name={file}
+                                        onChange={handleFileSelection}
+                                    />
+                                    <span class="switch-left">Yes</span>
+                                    <span class="switch-right">No</span>
+                                </label>
+                                <p>{file}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <button>{isLoading ? "Loading..." : "Generate DocStrings"}</button>
                 </form>) : null
             }
 

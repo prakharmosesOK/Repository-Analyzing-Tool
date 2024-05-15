@@ -15,7 +15,9 @@
   
   .documentation-gen-container form input {
     width: 80vmin;
-    height: 8vmin;
+    height: 6vmin;
+    padding-left: 1em;
+    font-size: medium;
     display: flex;
     
     place-content: center;
