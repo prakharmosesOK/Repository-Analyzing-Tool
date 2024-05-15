@@ -1,16 +1,142 @@
+/* DependencyTracker.css */
 .CommitHistoryContainer {
-    border: 2px solid red;
-    height: 800px;
-}
-.commitoutput{
-    border: 2px solid blue;
     display: flex;
     flex-direction: column;
-    justify-content: center; 
+    align-items: center;
+    place-content: center;
+    margin-top: 50px;
+    /* background-color: #f9f9f9; */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* background-color: red; */
 }
 
-.commitoutput .commitHistoryBlock {
-    border: 2px solid green;
-    width:800px;
+/* Modified code */
+
+.CommitHistoryContainer form input {
+    width: 80vmin;
+    height: 8vmin;
     display: flex;
+    place-content: center;
+    color: white;
+    text-shadow: 0 1px 0 #000;
+
+    --main-bg: conic-gradient(from var(--border-angle),
+            #213,
+            #112 5%,
+            #112 60%,
+            #213 95%);
+
+    border: solid 5px transparent;
+    border-radius: 2em;
+    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+
+    background:
+        var(--main-bg) padding-box,
+        var(--gradient-border) border-box,
+        var(--main-bg) border-box;
+
+    background-position: center center;
+
+    animation: bg-spin 3s linear infinite;
+}
+
+@keyframes bg-spin {
+    to {
+        --border-angle: 1turn;
+    }
+}
+
+.CommitHistoryContainer form input:hover {
+    animation-play-state: paused;
+}
+
+@property --border-angle {
+    syntax: "<angle>";
+    inherits: true;
+    initial-value: 0turn;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+form button {
+    width: 20vmin;
+    height: 8vmin;
+    color: white;
+    margin-top: 2rem;
+    text-shadow: 0 1px 0 #000;
+
+    --main-bg: conic-gradient(from var(--border-angle),
+            #213,
+            #112 5%,
+            #112 60%,
+            #213 95%);
+
+    border: solid 5px transparent;
+    border-radius: 2em;
+    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+
+    background:
+        var(--main-bg) padding-box,
+        var(--gradient-border) border-box,
+        var(--main-bg) border-box;
+
+    background-position: center center;
+
+    animation: bg-spin 3s linear infinite;
+}
+
+.commitoutput {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.commitHistoryBlock {
+    min-width: 120vmin;
+    max-width: 80%;
+    /* Adjust as needed */
+    min-height: 20vmin;
+    max-height: auto;
+    /* Adjust as needed */
+    display: flex;
+    margin-top: 3rem;
+    place-content: center;
+    color: white;
+    text-shadow: 0 1px 0 #000;
+    overflow: auto;
+    /* Add this */
+    word-wrap: break-word;
+    /* Add this */
+
+    --main-bg: conic-gradient(from var(--border-angle),
+            #213,
+            #112 5%,
+            #112 60%,
+            #213 95%);
+
+    border: solid 5px transparent;
+    border-radius: 2em;
+    --gradient-border: conic-gradient(from var(--border-angle), transparent 25%, #08f, #f03 99%, transparent);
+
+    background:
+        var(--main-bg) padding-box,
+        var(--gradient-border) border-box,
+        var(--main-bg) border-box;
+
+    background-position: center center;
+
+    animation: bg-spin 3s linear infinite;
+}
+
+
+textarea:hover {
+    animation-play-state: paused;
 }

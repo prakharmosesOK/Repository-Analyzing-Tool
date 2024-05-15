@@ -5,6 +5,8 @@ import '../styles/DependencyTracker.css';
 const DependencyTracker = () => {
     // Intialising variables
     const [searchItem, setSearchItem] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [dependencyOutput, setDependencyOutput] = useState('');
 
     // Defining functions
@@ -14,11 +16,19 @@ const DependencyTracker = () => {
 
     const handleDependencySubmit = async (event) => {
         event.preventDefault();
-        const response = await axios.post("http://127.0.0.1:8000/repoanalyze/get_dependencies/", {
-            input: searchItem,
-        });
-        console.log(response.data.output);
-        setDependencyOutput(response.data.output);
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.post("http://127.0.0.1:8000/repoanalyze/get_dependencies/", {
+                input: searchItem,
+            });
+            console.log(response.data.output);
+            setDependencyOutput(response.data.output);
+        } catch (error) {
+            setError(`Failed to retrieve dependencies: ${error}`);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const handleDependencyOutput = (event) => {
@@ -34,11 +44,11 @@ const DependencyTracker = () => {
                     onChange={handleSearchTextChange}
                     placeholder='Enter the GitHub repository link here'
                 />
-                <button type='submit'>Submit</button>
+                <button type='submit' disabled={loading}>{loading ? "Loading..." : "Submit"}</button>
             </form>
             <div className="output">
                 <textarea
-                    value={dependencyOutput}
+                    value={!error ? dependencyOutput : error}
                     placeholder="Requirements"
                     onChange={handleDependencyOutput}
                 />

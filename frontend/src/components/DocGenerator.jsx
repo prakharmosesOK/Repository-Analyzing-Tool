@@ -54,7 +54,7 @@ const DocGenerator = () => {
                 input: selectedFiles
             })
             const data = response.data.output;
-            if (data === 'success') {
+            if (data === 'Doc Strings generated successfully!') {
                 setDocGenerated(true);
                 setFilesInRepo([]);
                 setSelectedFiles([]);
@@ -68,8 +68,6 @@ const DocGenerator = () => {
             setDocGenerated(false);
         } finally {
             setIsLoading(false);
-            // setSelectedFiles([]);
-            // setFilesInRepo([])
         }
     }
 

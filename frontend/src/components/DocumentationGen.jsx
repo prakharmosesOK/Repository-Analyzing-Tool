@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Importing styles
+import '../styles/DocumentationGen.css';
+
 const DocumentationGen = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState(null);

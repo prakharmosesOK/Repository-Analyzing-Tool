@@ -1,5 +1,5 @@
 /* DependencyTracker.css */
-.doc-generator-container {
+.documentation-gen-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -8,13 +8,12 @@
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    color:#ffffff;
     /* background-color: red; */
   }
   
   /* Modified code */
   
-  .doc-generator-container form input {
+  .documentation-gen-container form input {
     width: 80vmin;
     height: 8vmin;
     display: flex;
@@ -53,7 +52,7 @@
     }
   }
   
-  .doc-generator-container form input:hover {
+  .documentation-gen-container form input:hover {
     animation-play-state: paused;
   }
   
@@ -63,19 +62,20 @@
     initial-value: 0turn;
   }
   
-  .doc-generator-container form {
+  .documentation-gen-container form {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
   }
   
-  .doc-generator-container form button {
+  .documentation-gen-container form button, button {
     width: 20vmin;
     height: 8vmin;
     color: white;
     margin-top: 2rem;
     text-shadow: 0 1px 0 #000;
+    cursor: pointer;
     
     --main-bg: conic-gradient(
         from var(--border-angle),
@@ -99,8 +99,8 @@
     animation: bg-spin 10000s linear infinite;
   }
   
-  .doc-generator-container .output
-   textarea {
+  textarea {
+    margin-top: auto;
     width: 120vmin;
     padding: 2rem;
     height: 50vmin;
@@ -133,6 +133,6 @@
     animation: bg-spin 3s linear infinite;
   }
   
-  .doc-generator-container textarea:hover {
+  .documentation-gen-container textarea:hover {
     animation-play-state: paused;
   }
