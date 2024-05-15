@@ -68,6 +68,8 @@ const DocGenerator = () => {
             setDocGenerated(false);
         } finally {
             setIsLoading(false);
+            // setSelectedFiles([]);
+            // setFilesInRepo([])
         }
     }
 
