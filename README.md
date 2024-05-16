@@ -148,7 +148,7 @@ The tool basically contains four section:
 </ol>
 
 ## 👷 Contributing
-I welcome contributions from the community. Feel free to submit pull requests or bug repoerts to improve the GitHub-Repo-Analyzer.
+I welcome contributions from the community. Feel free to submit pull requests or bug reports to improve the GitHub-Repo-Analyzer.
 
 ## 🎓 Author
 
