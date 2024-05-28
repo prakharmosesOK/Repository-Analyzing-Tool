@@ -71,8 +71,15 @@ Follow these steps to set up the GitHub-Repo-Analyzer on your system:
     ```bash
     npm start
     ```
+4. Create file .env in the root folder of the project and populate it as follows:
+   ```env
+   GITHUB_NEW_TOKEN = <your-github-token-to-fork-repo>
+   GITHUB_PULL_TOKEN = <your-github-token-to-create-pull-request>
+   GEMINI_API_KEY = <your-gemini-api-key>
+   ```
+   Then replace the written username with your GitHub username in line 623 in backend/repoanalyze/views.py.
 
-4. In second terminal, navigate to the backend folder, create a virtual environment.
+5. In second terminal, navigate to the backend folder, create a virtual environment.
     ```bash
     cd backend
     ```
@@ -80,7 +87,7 @@ Follow these steps to set up the GitHub-Repo-Analyzer on your system:
     python -m venv gitrepoanalyzer
     ```
 
-5. Activate the virtual environmentm install all required dependencies and run the server.
+6. Activate the virtual environmentm install all required dependencies and run the server.
     ```bash
     gitrepoanalyzer\Scripts\activate.ps1
     ```
