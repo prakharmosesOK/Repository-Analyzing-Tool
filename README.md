@@ -160,4 +160,3 @@ I welcome contributions from the community. Feel free to submit pull requests or
 ## 🎓 Author
 
 <p>  <a href="https://github.com/prakharmosesOK"><b>Prakhar Moses</b><a/><p/>
-<p> <a href="https://github.com/prakharmoses"><b>Prakhar Moses</b><a/></p>
